@@ -13,61 +13,27 @@ defineOptions({ name: 'Login' });
 
 const authStore = useAuthStore();
 
-const MOCK_USER_OPTIONS: BasicOption[] = [
+// 租户选项
+const TENANT_OPTIONS: BasicOption[] = [
   {
-    label: 'Super',
-    value: 'vben',
-  },
-  {
-    label: 'Admin',
-    value: 'admin',
-  },
-  {
-    label: 'User',
-    value: 'jack',
+    label: 'Default',
+    value: 'default',
   },
 ];
 
 const formSchema = computed((): VbenFormSchema[] => {
   return [
     {
-      component: 'VbenSelect',
-      componentProps: {
-        options: MOCK_USER_OPTIONS,
-        placeholder: $t('authentication.selectAccount'),
-      },
-      fieldName: 'selectAccount',
-      label: $t('authentication.selectAccount'),
-      rules: z
-        .string()
-        .min(1, { message: $t('authentication.selectAccount') })
-        .optional()
-        .default('vben'),
-    },
-    {
       component: 'VbenInput',
       componentProps: {
         placeholder: $t('authentication.usernameTip'),
       },
-      dependencies: {
-        trigger(values, form) {
-          if (values.selectAccount) {
-            const findUser = MOCK_USER_OPTIONS.find(
-              (item) => item.value === values.selectAccount,
-            );
-            if (findUser) {
-              form.setValues({
-                password: '123456',
-                username: findUser.value,
-              });
-            }
-          }
-        },
-        triggerFields: ['selectAccount'],
-      },
       fieldName: 'username',
       label: $t('authentication.username'),
-      rules: z.string().min(1, { message: $t('authentication.usernameTip') }),
+      rules: z
+        .string()
+        .min(3, { message: $t('authentication.usernameTip') })
+        .max(20, { message: $t('authentication.usernameTip') }),
     },
     {
       component: 'VbenInputPassword',
@@ -76,7 +42,18 @@ const formSchema = computed((): VbenFormSchema[] => {
       },
       fieldName: 'password',
       label: $t('authentication.password'),
-      rules: z.string().min(1, { message: $t('authentication.passwordTip') }),
+      rules: z.string().min(6, { message: $t('authentication.passwordTip') }),
+    },
+    {
+      component: 'VbenSelect',
+      componentProps: {
+        options: TENANT_OPTIONS,
+        placeholder: $t('authentication.tenantIdTip'),
+      },
+      defaultValue: 'default',
+      fieldName: 'tenant_id',
+      label: $t('authentication.tenantId'),
+      rules: z.string().min(1, { message: $t('authentication.tenantIdTip') }),
     },
     {
       component: markRaw(SliderCaptcha),

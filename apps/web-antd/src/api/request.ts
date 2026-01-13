@@ -7,7 +7,6 @@ import { useAppConfig } from '@vben/hooks';
 import { preferences } from '@vben/preferences';
 import {
   authenticateResponseInterceptor,
-  defaultResponseInterceptor,
   errorMessageResponseInterceptor,
   RequestClient,
 } from '@vben/request';
@@ -50,10 +49,22 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
    */
   async function doRefreshToken() {
     const accessStore = useAccessStore();
-    const resp = await refreshTokenApi();
-    const newToken = resp.data;
-    accessStore.setAccessToken(newToken);
-    return newToken;
+    const currentRefreshToken = accessStore.refreshToken;
+    if (!currentRefreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    // baseRequestClient 返回完整的 AxiosResponse
+    const resp: any = await refreshTokenApi(currentRefreshToken);
+    const { access_token, refresh_token, session_id, expires_in } = resp.data;
+
+    // 更新所有 token 和会话信息
+    accessStore.setAccessToken(access_token);
+    accessStore.setRefreshToken(refresh_token);
+    accessStore.setSessionId(session_id);
+    accessStore.setExpiresAt(Date.now() + expires_in * 1000);
+
+    return access_token;
   }
 
   function formatToken(token: null | string) {
@@ -71,14 +82,14 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     },
   });
 
-  // 处理返回的响应数据格式
-  client.addResponseInterceptor(
-    defaultResponseInterceptor({
-      codeField: 'code',
-      dataField: 'data',
-      successCode: 0,
-    }),
-  );
+  // 后端直接返回数据，不使用 {code, data} 包装格式
+  // 添加自定义响应拦截器提取 data
+  client.addResponseInterceptor({
+    fulfilled: (response: any) => {
+      // 直接返回响应数据
+      return response.data;
+    },
+  });
 
   // token过期的处理
   client.addResponseInterceptor(

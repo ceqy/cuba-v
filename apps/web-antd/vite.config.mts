@@ -8,9 +8,8 @@ export default defineConfig(async () => {
         proxy: {
           '/api': {
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, ''),
-            // mock代理目标地址
-            target: 'http://localhost:5320/api',
+            // 后端已包含 /api 前缀，无需 rewrite
+            target: 'http://10.0.0.101:30080', // K3s NodePort
             ws: true,
           },
         },

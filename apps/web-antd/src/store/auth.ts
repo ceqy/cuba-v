@@ -10,8 +10,36 @@ import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores';
 import { notification } from 'ant-design-vue';
 import { defineStore } from 'pinia';
 
-import { getAccessCodesApi, getUserInfoApi, loginApi, logoutApi } from '#/api';
+import type { AuthApi } from '#/api';
+
+import { loginApi, logoutApi, registerApi } from '#/api';
 import { $t } from '#/locales';
+
+/**
+ * 解析 JWT Token 获取 payload
+ */
+function parseJwt(token: string): Record<string, any> {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return {};
+    }
+    const base64Url = parts[1];
+    if (!base64Url) {
+      return {};
+    }
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(''),
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return {};
+  }
+}
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -19,100 +47,144 @@ export const useAuthStore = defineStore('auth', () => {
   const router = useRouter();
 
   const loginLoading = ref(false);
+  const registerLoading = ref(false);
 
   /**
    * 异步处理登录操作
-   * Asynchronously handle the login process
-   * @param params 登录表单数据
    */
   async function authLogin(
     params: Recordable<any>,
     onSuccess?: () => Promise<void> | void,
   ) {
-    // 异步处理用户登录操作并获取 accessToken
     let userInfo: null | UserInfo = null;
     try {
       loginLoading.value = true;
-      const { accessToken } = await loginApi(params);
+      const loginResult = await loginApi(params as AuthApi.LoginParams);
 
-      // 如果成功获取到 accessToken
-      if (accessToken) {
-        accessStore.setAccessToken(accessToken);
+      const {
+        access_token,
+        refresh_token,
+        session_id,
+        expires_in,
+      } = loginResult;
 
-        // 获取用户信息并存储到 accessStore 中
-        const [fetchUserInfoResult, accessCodes] = await Promise.all([
-          fetchUserInfo(),
-          getAccessCodesApi(),
-        ]);
+      if (access_token) {
+        // 存储 token 和会话信息
+        accessStore.setAccessToken(access_token);
+        accessStore.setRefreshToken(refresh_token);
+        accessStore.setSessionId(session_id);
+        accessStore.setExpiresAt(Date.now() + expires_in * 1000);
 
-        userInfo = fetchUserInfoResult;
+        // 从 JWT 解析用户信息
+        const jwtPayload = parseJwt(access_token);
+        userInfo = {
+          userId: jwtPayload.sub || session_id,
+          username: params.username || '',
+          realName: params.username || '',
+          roles: jwtPayload.roles || [],
+          avatar: '',
+          desc: '',
+          homePath: preferences.app.defaultHomePath,
+          token: access_token,
+        };
 
         userStore.setUserInfo(userInfo);
-        accessStore.setAccessCodes(accessCodes);
+        accessStore.setAccessCodes(jwtPayload.roles || []);
 
         if (accessStore.loginExpired) {
           accessStore.setLoginExpired(false);
         } else {
-          onSuccess
-            ? await onSuccess?.()
-            : await router.push(
-                userInfo.homePath || preferences.app.defaultHomePath,
-              );
+          const targetPath = userInfo.homePath || preferences.app.defaultHomePath;
+          onSuccess ? await onSuccess?.() : await router.push(targetPath);
         }
 
-        if (userInfo?.realName) {
-          notification.success({
-            description: `${$t('authentication.loginSuccessDesc')}:${userInfo?.realName}`,
-            duration: 3,
-            message: $t('authentication.loginSuccess'),
-          });
-        }
+        notification.success({
+          description: `${$t('authentication.loginSuccessDesc')}:${userInfo.realName}`,
+          duration: 3,
+          message: $t('authentication.loginSuccess'),
+        });
       }
     } finally {
       loginLoading.value = false;
     }
 
-    return {
-      userInfo,
-    };
+    return { userInfo };
+  }
+
+  /**
+   * 异步处理注册操作
+   */
+  async function authRegister(params: AuthApi.RegisterParams) {
+    try {
+      registerLoading.value = true;
+      const result = await registerApi(params);
+
+      notification.success({
+        description: $t('authentication.registerSuccessDesc'),
+        duration: 3,
+        message: $t('authentication.registerSuccess'),
+      });
+
+      await router.push(LOGIN_PATH);
+      return result;
+    } finally {
+      registerLoading.value = false;
+    }
   }
 
   async function logout(redirect: boolean = true) {
     try {
-      await logoutApi();
+      const sessionId = accessStore.sessionId;
+      const accessToken = accessStore.accessToken;
+      if (sessionId && accessToken) {
+        await logoutApi(sessionId, accessToken);
+      }
     } catch {
-      // 不做任何处理
+      // 忽略注销 API 错误
     }
     resetAllStores();
     accessStore.setLoginExpired(false);
 
-    // 回登录页带上当前路由地址
     await router.replace({
       path: LOGIN_PATH,
       query: redirect
-        ? {
-            redirect: encodeURIComponent(router.currentRoute.value.fullPath),
-          }
+        ? { redirect: encodeURIComponent(router.currentRoute.value.fullPath) }
         : {},
     });
   }
 
   async function fetchUserInfo() {
-    let userInfo: null | UserInfo = null;
-    userInfo = await getUserInfoApi();
+    const token = accessStore.accessToken;
+    if (!token) {
+      return null;
+    }
+    const jwtPayload = parseJwt(token);
+    const userInfo: UserInfo = {
+      userId: jwtPayload.sub || '',
+      username: jwtPayload.sub || '',
+      realName: jwtPayload.sub || '',
+      roles: jwtPayload.roles || [],
+      avatar: '',
+      desc: '',
+      homePath: preferences.app.defaultHomePath,
+      token: token,
+    };
     userStore.setUserInfo(userInfo);
     return userInfo;
   }
 
   function $reset() {
     loginLoading.value = false;
+    registerLoading.value = false;
   }
 
   return {
     $reset,
     authLogin,
+    authRegister,
     fetchUserInfo,
     loginLoading,
     logout,
+    registerLoading,
   };
 });

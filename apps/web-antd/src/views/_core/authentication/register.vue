@@ -1,15 +1,27 @@
 <script lang="ts" setup>
 import type { VbenFormSchema } from '@vben/common-ui';
-import type { Recordable } from '@vben/types';
+import type { BasicOption } from '@vben/types';
 
-import { computed, h, ref } from 'vue';
+import { computed, h } from 'vue';
 
 import { AuthenticationRegister, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
+import type { AuthApi } from '#/api';
+
+import { useAuthStore } from '#/store';
+
 defineOptions({ name: 'Register' });
 
-const loading = ref(false);
+const authStore = useAuthStore();
+
+// 租户选项
+const TENANT_OPTIONS: BasicOption[] = [
+  {
+    label: 'Default',
+    value: 'default',
+  },
+];
 
 const formSchema = computed((): VbenFormSchema[] => {
   return [
@@ -20,7 +32,20 @@ const formSchema = computed((): VbenFormSchema[] => {
       },
       fieldName: 'username',
       label: $t('authentication.username'),
-      rules: z.string().min(1, { message: $t('authentication.usernameTip') }),
+      rules: z
+        .string()
+        .min(3, { message: $t('authentication.usernameTip') })
+        .max(20, { message: $t('authentication.usernameTip') }),
+    },
+    {
+      component: 'VbenInput',
+      componentProps: {
+        placeholder: $t('authentication.emailTip'),
+        type: 'email',
+      },
+      fieldName: 'email',
+      label: $t('authentication.email'),
+      rules: z.string().email({ message: $t('authentication.emailValidErrorTip') }),
     },
     {
       component: 'VbenInputPassword',
@@ -35,7 +60,7 @@ const formSchema = computed((): VbenFormSchema[] => {
           strengthText: () => $t('authentication.passwordStrength'),
         };
       },
-      rules: z.string().min(1, { message: $t('authentication.passwordTip') }),
+      rules: z.string().min(6, { message: $t('authentication.passwordTip') }),
     },
     {
       component: 'VbenInputPassword',
@@ -47,7 +72,7 @@ const formSchema = computed((): VbenFormSchema[] => {
           const { password } = values;
           return z
             .string({ required_error: $t('authentication.passwordTip') })
-            .min(1, { message: $t('authentication.passwordTip') })
+            .min(6, { message: $t('authentication.passwordTip') })
             .refine((value) => value === password, {
               message: $t('authentication.confirmPasswordTip'),
             });
@@ -56,6 +81,17 @@ const formSchema = computed((): VbenFormSchema[] => {
       },
       fieldName: 'confirmPassword',
       label: $t('authentication.confirmPassword'),
+    },
+    {
+      component: 'VbenSelect',
+      componentProps: {
+        options: TENANT_OPTIONS,
+        placeholder: $t('authentication.tenantIdTip'),
+      },
+      defaultValue: 'default',
+      fieldName: 'tenant_id',
+      label: $t('authentication.tenantId'),
+      rules: z.string().min(1, { message: $t('authentication.tenantIdTip') }),
     },
     {
       component: 'VbenCheckbox',
@@ -81,16 +117,21 @@ const formSchema = computed((): VbenFormSchema[] => {
   ];
 });
 
-function handleSubmit(value: Recordable<any>) {
-  // eslint-disable-next-line no-console
-  console.log('register submit:', value);
+async function handleSubmit(values: Record<string, any>) {
+  const registerParams: AuthApi.RegisterParams = {
+    email: values.email,
+    password: values.password,
+    tenant_id: values.tenant_id,
+    username: values.username,
+  };
+  await authStore.authRegister(registerParams);
 }
 </script>
 
 <template>
   <AuthenticationRegister
     :form-schema="formSchema"
-    :loading="loading"
+    :loading="authStore.registerLoading"
     @submit="handleSubmit"
   />
 </template>

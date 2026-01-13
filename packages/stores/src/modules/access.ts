@@ -40,9 +40,17 @@ interface AccessState {
    */
   loginExpired: boolean;
   /**
-   * 登录 accessToken
+   * 刷新 Token
    */
   refreshToken: AccessToken;
+  /**
+   * 会话 ID
+   */
+  sessionId: null | string;
+  /**
+   * Token 过期时间戳 (毫秒)
+   */
+  expiresAt: null | number;
 }
 
 /**
@@ -94,6 +102,12 @@ export const useAccessStore = defineStore('core-access', {
     setRefreshToken(token: AccessToken) {
       this.refreshToken = token;
     },
+    setSessionId(sessionId: null | string) {
+      this.sessionId = sessionId;
+    },
+    setExpiresAt(expiresAt: null | number) {
+      this.expiresAt = expiresAt;
+    },
     unlockScreen() {
       this.isLockScreen = false;
       this.lockScreenPassword = undefined;
@@ -104,6 +118,8 @@ export const useAccessStore = defineStore('core-access', {
     pick: [
       'accessToken',
       'refreshToken',
+      'sessionId',
+      'expiresAt',
       'accessCodes',
       'isLockScreen',
       'lockScreenPassword',
@@ -119,6 +135,8 @@ export const useAccessStore = defineStore('core-access', {
     lockScreenPassword: undefined,
     loginExpired: false,
     refreshToken: null,
+    sessionId: null,
+    expiresAt: null,
   }),
 });
 

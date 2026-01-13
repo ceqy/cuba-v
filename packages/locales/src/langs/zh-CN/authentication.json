@@ -53,6 +53,10 @@
   "thirdPartyLogin": "其他登录方式",
   "loginAgainTitle": "重新登录",
   "loginAgainSubTitle": "您的登录状态已过期，请重新登录以继续。",
+  "registerSuccess": "注册成功",
+  "registerSuccessDesc": "账号创建成功，请登录",
+  "tenantId": "租户",
+  "tenantIdTip": "请选择租户",
   "layout": {
     "center": "居中",
     "alignLeft": "居左",

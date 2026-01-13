@@ -53,6 +53,10 @@
   "thirdPartyLogin": "Or continue with",
   "loginAgainTitle": "Please Log In Again",
   "loginAgainSubTitle": "Your login session has expired. Please log in again to continue.",
+  "registerSuccess": "Registration Successful",
+  "registerSuccessDesc": "Account created successfully, please login",
+  "tenantId": "Tenant",
+  "tenantIdTip": "Please select a tenant",
   "layout": {
     "center": "Align Center",
     "alignLeft": "Align Left",
