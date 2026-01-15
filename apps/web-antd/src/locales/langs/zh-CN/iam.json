@@ -1,0 +1,36 @@
+{
+  "role": {
+    "name": "角色名称",
+    "code": "角色编码",
+    "codePlaceholder": "留空自动生成",
+    "description": "描述",
+    "tenant_id": "租户ID",
+    "permissions": "权限",
+    "is_immutable": "系统角色",
+    "created_at": "创建时间",
+    "list": "角色列表",
+    "cannot_delete_immutable": "系统角色不可删除"
+  },
+  "permission": {
+    "code": "权限编码",
+    "resource": "资源",
+    "action": "操作",
+    "description": "描述",
+    "name": "名称",
+    "created_at": "创建时间",
+    "list": "权限列表"
+  },
+  "user": {
+    "username": "用户名",
+    "email": "邮箱",
+    "phone": "电话",
+    "email_verified": "邮箱已验证",
+    "display_name": "显示名称",
+    "tenant_id": "租户ID",
+    "status": "状态",
+    "created_at": "创建时间",
+    "list": "用户列表",
+    "roles": "角色",
+    "name": "用户"
+  }
+}

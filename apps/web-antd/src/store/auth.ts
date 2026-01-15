@@ -12,7 +12,7 @@ import { defineStore } from 'pinia';
 
 import type { AuthApi } from '#/api';
 
-import { loginApi, logoutApi, registerApi } from '#/api';
+import { getUserInfoApi, loginApi, logoutApi, registerApi } from '#/api';
 import { $t } from '#/locales';
 
 /**
@@ -158,19 +158,16 @@ export const useAuthStore = defineStore('auth', () => {
     if (!token) {
       return null;
     }
-    const jwtPayload = parseJwt(token);
-    const userInfo: UserInfo = {
-      userId: jwtPayload.sub || '',
-      username: jwtPayload.sub || '',
-      realName: jwtPayload.sub || '',
-      roles: jwtPayload.roles || [],
-      avatar: '',
-      desc: '',
-      homePath: preferences.app.defaultHomePath,
-      token: token,
-    };
-    userStore.setUserInfo(userInfo);
-    return userInfo;
+    
+    // Instead of parsing JWT locally, use the API to get fresh full user info
+    try {
+        const userInfo = await getUserInfoApi();
+        userStore.setUserInfo(userInfo);
+        return userInfo;
+    } catch (error) {
+        console.error('Failed to fetch user info:', error);
+        return null; // Or handle error appropriately
+    }
   }
 
   function $reset() {
