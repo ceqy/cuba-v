@@ -32,10 +32,10 @@ export namespace PermissionApi {
 }
 
 export async function getPermissionsApi(
-  params: PermissionApi.PermissionListParams,
+  params?: PermissionApi.PermissionListParams,
 ) {
   return requestClient.get<PermissionApi.PermissionListResult>(
-    '/v1/auth/permissions',
+    '/v1/rbac/permissions',
     { params },
   );
 }

@@ -7,29 +7,25 @@ import { $t } from '#/locales';
 export function useColumns(): VxeTableGridOptions['columns'] {
   return [
     {
-      type: 'checkbox',
-      width: 60,
-    },
-    {
       field: 'user_id',
       title: 'ID',
-      width: 100,
+      width: 80,
       visible: false, // Usually ID is hidden or optional
     },
     {
       field: 'username',
       title: $t('iam.user.username'),
-      minWidth: 120,
+      minWidth: 100,
     },
     {
       field: 'email',
       title: $t('iam.user.email'),
-      minWidth: 180,
+      minWidth: 100,
     },
     {
       field: 'roles',
       title: $t('iam.user.roles'),
-      width: 180,
+      width: 100,
       formatter: ({ row }) => {
         return Array.isArray(row.roles) ? row.roles.join(', ') : row.roles;
       },
@@ -37,7 +33,7 @@ export function useColumns(): VxeTableGridOptions['columns'] {
     {
       field: 'email_verified',
       title: $t('iam.user.email_verified') || 'Email Verified',
-      width: 120,
+      width: 100,
       formatter: ({ cellValue }) => {
         return cellValue ? 'Yes' : 'No';
       },
@@ -45,23 +41,13 @@ export function useColumns(): VxeTableGridOptions['columns'] {
     {
       field: 'created_at',
       title: $t('iam.user.created_at'),
-      width: 180,
-      formatter: ({ cellValue }) => {
-        if (!cellValue) return '-';
-        const date = new Date(cellValue);
-        return date.toLocaleString('zh-CN', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-      },
+      width: 240,
+      formatter: 'formatDateTime',
     },
     {
       title: $t('common.action'),
       fixed: 'right',
-      width: 180,
+      width: 240,
       slots: { default: 'action' },
     },
   ];
@@ -71,15 +57,22 @@ export function useSearchFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入用户名',
+      },
       fieldName: 'username',
       label: $t('iam.user.username'),
     },
     {
       component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入邮箱',
+      },
       fieldName: 'email',
       label: $t('iam.user.email'),
     },
-    // Add other search fields if needed
   ];
 }
 

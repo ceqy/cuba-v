@@ -19,7 +19,7 @@ export namespace UserApi {
 
   export interface UserListResult {
     users: User[];
-    pagination: {
+    pagination?: {
       current_page: number;
       page_size: number;
       total_items: string;
@@ -75,9 +75,25 @@ export async function getUserInfoApi(): Promise<UserInfo> {
  * 获取用户列表
  * GET /api/v1/auth/users
  */
-export async function getUserListApi(params: UserApi.UserListParams) {
+export async function getUserListApi(params?: UserApi.UserListParams) {
+  // 转换参数格式以匹配后端 API
+  const apiParams: Record<string, any> = {};
+
+  if (params?.page) {
+    apiParams['pagination.page'] = params.page;
+  }
+  if (params?.page_size) {
+    apiParams['pagination.page_size'] = params.page_size;
+  }
+  if (params?.username) {
+    apiParams.username = params.username;
+  }
+  if (params?.email) {
+    apiParams.email = params.email;
+  }
+
   return requestClient.get<UserApi.UserListResult>('/v1/auth/users', {
-    params,
+    params: apiParams,
   });
 }
 
@@ -106,4 +122,30 @@ export async function updateUserApi(
  */
 export async function deleteUserApi(userId: string) {
   return requestClient.delete(`/v1/auth/users/${userId}`);
+}
+
+/**
+ * 获取用户的角色列表
+ * GET /api/v1/rbac/users/:userId/roles
+ */
+export async function getUserRolesApi(userId: string) {
+  return requestClient.get<{ role_ids: string[] }>(
+    `/v1/rbac/users/${userId}/roles`,
+  );
+}
+
+/**
+ * 给用户分配角色
+ * POST /api/v1/rbac/users/:userId/roles/:roleId
+ */
+export async function assignUserRoleApi(userId: string, roleId: string) {
+  return requestClient.post(`/v1/rbac/users/${userId}/roles/${roleId}`, {});
+}
+
+/**
+ * 移除用户的角色
+ * DELETE /api/v1/rbac/users/:userId/roles/:roleId
+ */
+export async function removeUserRoleApi(userId: string, roleId: string) {
+  return requestClient.delete(`/v1/rbac/users/${userId}/roles/${roleId}`);
 }

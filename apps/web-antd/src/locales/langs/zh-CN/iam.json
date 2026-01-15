@@ -7,6 +7,9 @@
     "tenant_id": "租户ID",
     "permissions": "权限",
     "is_immutable": "系统角色",
+    "type": "类型",
+    "status": "状态",
+    "parent": "父角色",
     "created_at": "创建时间",
     "list": "角色列表",
     "cannot_delete_immutable": "系统角色不可删除"

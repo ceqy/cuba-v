@@ -6,7 +6,8 @@ import { $t } from '#/locales';
 export function useColumns(): VxeTableGridOptions['columns'] {
   return [
     {
-      type: 'checkbox',
+      type: 'seq',
+      title: '#',
       width: 60,
     },
     {
@@ -18,12 +19,15 @@ export function useColumns(): VxeTableGridOptions['columns'] {
     {
       field: 'name',
       title: $t('iam.role.name'),
-      minWidth: 150,
+      minWidth: 100,
     },
     {
-      field: 'code',
-      title: $t('iam.role.code'),
-      minWidth: 150,
+      field: 'parent_id',
+      title: $t('iam.role.parent'),
+      width: 100,
+      formatter: ({ cellValue }) => {
+        return cellValue || '-';
+      },
     },
     {
       field: 'description',
@@ -32,21 +36,22 @@ export function useColumns(): VxeTableGridOptions['columns'] {
     },
     {
       field: 'is_immutable',
-      title: $t('iam.role.is_immutable'),
-      width: 120,
+      title: $t('iam.role.type'),
+      width: 100,
       formatter: ({ cellValue }) => {
-        return cellValue ? 'System' : 'Custom';
+        return cellValue ? '系统' : '自定义';
       },
     },
     {
       field: 'created_at',
       title: $t('iam.role.created_at'),
-      width: 180,
+      width: 240,
+      formatter: 'formatDateTime',
     },
     {
       title: $t('common.action'),
       fixed: 'right',
-      width: 120,
+      width: 240, // Ensure wide enough for buttons
       slots: { default: 'action' },
     },
   ];
@@ -56,13 +61,12 @@ export function useSearchFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入角色名称',
+      },
       fieldName: 'name',
       label: $t('iam.role.name'),
-    },
-    {
-      component: 'Input',
-      fieldName: 'code',
-      label: $t('iam.role.code'),
     },
   ];
 }
@@ -71,18 +75,19 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
+      componentProps: {
+        placeholder: '请输入角色名称',
+      },
       fieldName: 'name',
       label: $t('iam.role.name'),
       rules: 'required',
     },
     {
-      component: 'Input',
-      fieldName: 'code',
-      label: $t('iam.role.code'),
-      rules: 'required',
-    },
-    {
       component: 'Textarea',
+      componentProps: {
+        placeholder: '请输入角色描述',
+        rows: 3,
+      },
       fieldName: 'description',
       label: $t('iam.role.description'),
     },

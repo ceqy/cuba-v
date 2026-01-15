@@ -50,6 +50,7 @@ export function useColumns(): VxeTableGridOptions['columns'] {
       field: 'created_at',
       title: $t('iam.permission.created_at'),
       width: 180,
+      formatter: 'formatDateTime',
     },
   ];
 }
@@ -58,11 +59,19 @@ export function useSearchFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入权限编码',
+      },
       fieldName: 'code',
       label: $t('iam.permission.code'),
     },
     {
       component: 'Input',
+      componentProps: {
+        allowClear: true,
+        placeholder: '请输入资源',
+      },
       fieldName: 'resource',
       label: $t('iam.permission.resource'),
     },
