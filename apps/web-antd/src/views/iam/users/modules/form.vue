@@ -46,6 +46,7 @@ function getFormSchema() {
       componentProps: {
         placeholder: $t('common.inputPlaceholder') || '请输入用户名',
         class: 'h-10',
+        disabled: isEditMode.value, // 编辑模式下禁止修改用户名
       },
       fieldName: 'username',
       label: $t('iam.user.username'),
@@ -161,10 +162,26 @@ const [Modal, modalApi] = useVbenModal({
 
       // 如果是编辑模式，填充表单数据
       if (isEditMode.value && editingUser.value) {
+        // 尝试映射角色 Name 到 ID
+        let mappedRoleIds: string[] = [];
+        if (Array.isArray(editingUser.value.roles)) {
+          mappedRoleIds = editingUser.value.roles
+            .map((roleNameOrId) => {
+              // 检查是否是 ID
+              const isId = roleOptions.value.some((opt) => opt.value === roleNameOrId);
+              if (isId) return roleNameOrId;
+              
+              // 尝试按 Name 查找 ID
+              const found = roleOptions.value.find((opt) => opt.label === roleNameOrId);
+              return found ? found.value : roleNameOrId;
+            })
+            .filter(Boolean);
+        }
+
         formApi.setValues({
           username: editingUser.value.username,
           email: editingUser.value.email,
-          role_ids: editingUser.value.roles || [],
+          role_ids: mappedRoleIds,
           is_active: editingUser.value.is_active,
           password: '', // 编辑时密码留空
         });
@@ -191,11 +208,11 @@ async function onSubmit(values: Record<string, any>) {
     if (isEditMode.value && editingUser.value) {
       // 编辑模式：调用更新 API
       const payload: any = {
-        username: values.username,
+        // username: values.username, // 移除 username，后端通常不支持修改用户名或无需再次发送
         email: values.email,
         role_ids: values.role_ids,
         is_active: values.is_active,
-        tenant_id: editingUser.value.tenant_id || 'default',
+        // tenant_id: editingUser.value.tenant_id || 'default', // 移除 tenant_id，避免错误覆盖
       };
 
       // 只有填写了密码才提交
@@ -235,8 +252,13 @@ async function onSubmit(values: Record<string, any>) {
     emits('success');
   } catch (error: any) {
     console.error('Failed to save user:', error);
-    const errorMsg =
+    let errorMsg =
       error?.response?.data?.message || error?.message || $t('common.error');
+    
+    if (error?.response?.status === 403) {
+      errorMsg = $t('common.noPermission') || '没有权限执行此操作';
+    }
+
     message.error({
       content: errorMsg,
       duration: 3,

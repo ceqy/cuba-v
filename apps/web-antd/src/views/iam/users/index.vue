@@ -4,7 +4,7 @@ import type { UserApi } from '#/api';
 import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
-import { Button, message, Modal } from 'ant-design-vue';
+import { Button, message, Modal as AntModal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { deleteUserApi, getUserListApi } from '#/api';
@@ -81,18 +81,28 @@ function handleEdit(row: UserApi.User) {
   userFormModalApi.open();
 }
 
+// 刷新列表
+async function handleSuccess() {
+  await gridApi.reload();
+}
+
 // 删除用户 - 使用 ant-design-vue 的 Modal.confirm
 function handleDelete(row: UserApi.User) {
-  Modal.confirm({
+  AntModal.confirm({
     title: $t('common.deleteConfirm'),
     content: $t('ui.actionMessage.deleteConfirm', [row.username]),
     onOk: async () => {
       try {
         await deleteUserApi(row.user_id);
         message.success($t('common.deleteSuccess'));
-        await gridApi.query();
-      } catch (error) {
+        await handleSuccess();
+      } catch (error: any) {
         console.error(error);
+        if (error?.response?.status === 403) {
+          message.error($t('common.noPermission') || '没有权限执行此操作');
+        } else {
+          message.error(error.message || $t('common.error'));
+        }
       }
     },
   });
@@ -103,7 +113,7 @@ function handleDelete(row: UserApi.User) {
   <Page :auto-content-height="true">
     <Grid>
       <template #toolbar-tools>
-        <UserFormModal @success="gridApi.query()" />
+        <UserFormModal @success="handleSuccess" />
         <Button type="primary" @click="handleAdd">
           <Plus class="mr-1 size-4" />
           {{ $t('common.add') }}

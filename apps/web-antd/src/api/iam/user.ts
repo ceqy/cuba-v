@@ -37,14 +37,14 @@ export namespace UserApi {
   }
 
   export interface UserEditParams {
-    username: string;
-    email: string;
+    username?: string;
+    email?: string;
     display_name?: string;
     avatar_url?: string;
     is_active?: boolean;
     role_ids?: string[];
-    tenant_id: string;
-    password: string;
+    tenant_id?: string;
+    password?: string;
   }
 }
 
