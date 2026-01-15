@@ -31,6 +31,11 @@
     "created_at": "创建时间",
     "list": "用户列表",
     "roles": "角色",
-    "name": "用户"
+    "name": "用户",
+    "basicInfo": "基本信息",
+    "accountSettings": "账户设置",
+    "createTitle": "创建用户",
+    "passwordHelp": "留空则保持当前密码",
+    "password": "密码"
   }
 }

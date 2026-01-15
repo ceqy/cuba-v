@@ -19,30 +19,20 @@ export function useColumns(): VxeTableGridOptions['columns'] {
     {
       field: 'username',
       title: $t('iam.user.username'),
-      minWidth: 100,
-    },
-    {
-      field: 'display_name',
-      title: $t('iam.user.display_name'),
-      minWidth: 100,
+      minWidth: 120,
     },
     {
       field: 'email',
       title: $t('iam.user.email'),
-      minWidth: 150,
+      minWidth: 180,
     },
     {
       field: 'roles',
       title: $t('iam.user.roles'),
-      width: 150,
+      width: 180,
       formatter: ({ row }) => {
         return Array.isArray(row.roles) ? row.roles.join(', ') : row.roles;
       },
-    },
-    {
-      field: 'phone',
-      title: $t('iam.user.phone') || 'Phone',
-      minWidth: 120,
     },
     {
       field: 'email_verified',
@@ -53,18 +43,20 @@ export function useColumns(): VxeTableGridOptions['columns'] {
       },
     },
     {
-      field: 'is_active',
-      title: $t('iam.user.status'),
-      width: 100,
-      formatter: ({ cellValue }) => {
-        // Can be improved with a Tag component or Status map
-        return cellValue ? 'Active' : 'Inactive';
-      },
-    },
-    {
       field: 'created_at',
       title: $t('iam.user.created_at'),
       width: 180,
+      formatter: ({ cellValue }) => {
+        if (!cellValue) return '-';
+        const date = new Date(cellValue);
+        return date.toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+      },
     },
     {
       title: $t('common.action'),

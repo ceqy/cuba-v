@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { UserApi } from '#/api';
 
-import { Page, useVbenDrawer } from '@vben/common-ui';
+import { Page, useVbenModal } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { Button, message, Modal } from 'ant-design-vue';
@@ -13,7 +13,8 @@ import { $t } from '#/locales';
 import { useColumns, useSearchFormSchema } from './data';
 import UserForm from './modules/form.vue';
 
-const [FormDrawer, formDrawerApi] = useVbenDrawer({
+// 使用 Modal 连接用户表单组件
+const [UserFormModal, userFormModalApi] = useVbenModal({
   connectedComponent: UserForm,
 });
 
@@ -68,15 +69,19 @@ const [Grid, gridApi] = useVbenVxeGrid({
   },
 });
 
+// 添加用户
 function handleAdd() {
-  formDrawerApi.setData({}).open();
+  userFormModalApi.setData({ mode: 'create' });
+  userFormModalApi.open();
 }
 
+// 编辑用户
 function handleEdit(row: UserApi.User) {
-  formDrawerApi.setData(row);
-  formDrawerApi.open();
+  userFormModalApi.setData({ mode: 'edit', record: row });
+  userFormModalApi.open();
 }
 
+// 删除用户 - 使用 ant-design-vue 的 Modal.confirm
 function handleDelete(row: UserApi.User) {
   Modal.confirm({
     title: $t('common.deleteConfirm'),
@@ -98,6 +103,7 @@ function handleDelete(row: UserApi.User) {
   <Page :auto-content-height="true">
     <Grid>
       <template #toolbar-tools>
+        <UserFormModal @success="gridApi.query()" />
         <Button type="primary" @click="handleAdd">
           <Plus class="mr-1 size-4" />
           {{ $t('common.add') }}
@@ -112,6 +118,5 @@ function handleDelete(row: UserApi.User) {
         </Button>
       </template>
     </Grid>
-    <FormDrawer @success="gridApi.query()" />
   </Page>
 </template>

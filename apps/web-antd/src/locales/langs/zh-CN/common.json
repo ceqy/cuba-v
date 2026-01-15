@@ -10,5 +10,12 @@
   "success": "成功",
   "error": "失败",
   "deleteConfirm": "确认删除?",
-  "deleteSuccess": "删除成功"
+  "deleteSuccess": "删除成功",
+  "create": "创建",
+  "submitting": "正在提交...",
+  "createSuccess": "创建成功",
+  "inputPlaceholder": "请输入",
+  "selectPlaceholder": "请选择",
+  "active": "启用",
+  "inactive": "禁用"
 }
