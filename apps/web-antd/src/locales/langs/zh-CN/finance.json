@@ -1,0 +1,38 @@
+{
+  "finance": {
+    "gl": {
+      "title": "总账管理",
+      "journal_entry": "记账凭证",
+      "entry_number": "凭证号",
+      "account": "科目",
+      "debit": "借方",
+      "credit": "贷方",
+      "balance": "平衡",
+      "post": "过账",
+      "reverse": "红字冲销"
+    },
+    "ap": {
+      "title": "应付账款",
+      "invoice": "采购发票",
+      "vendor": "供应商",
+      "clearing": "清账",
+      "aging": "账龄"
+    },
+    "ar": {
+      "title": "应收账款",
+      "invoice": "销售发票",
+      "customer": "客户"
+    },
+    "co": {
+      "title": "成本控制",
+      "cost_center": "成本中心",
+      "simulation": "模拟运行",
+      "allocation": "分摊"
+    },
+    "tr": {
+      "title": "资金管理",
+      "bank_statement": "银行对账单",
+      "reconciliation": "银企对账"
+    }
+  }
+}

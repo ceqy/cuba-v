@@ -40,5 +40,16 @@
     "createTitle": "创建用户",
     "passwordHelp": "留空则保持当前密码",
     "password": "密码"
+  },
+  "oauth_client": {
+    "list": "OAuth2 客户端",
+    "name": "客户端名称",
+    "client_id": "客户端ID",
+    "client_secret": "客户端密钥",
+    "redirect_uris": "回调地址",
+    "grant_types": "授权类型",
+    "scopes": "权限范围",
+    "tenant_id": "租户ID",
+    "created_at": "创建时间"
   }
 }

@@ -19,7 +19,7 @@ const routes: RouteRecordRaw[] = [
         path: 'users',
         component: () => import('#/views/iam/users/index.vue'),
         meta: {
-          title: $t('iam.user.list'), 
+          title: $t('iam.user.list'),
         },
       },
       {
@@ -36,6 +36,14 @@ const routes: RouteRecordRaw[] = [
         component: () => import('#/views/iam/permissions/index.vue'),
         meta: {
           title: $t('iam.permission.list'),
+        },
+      },
+      {
+        name: 'OAuthClientManagement',
+        path: 'oauth-clients',
+        component: () => import('#/views/iam/oauth-clients/index.vue'),
+        meta: {
+          title: $t('iam.oauth_client.list'),
         },
       },
     ],
